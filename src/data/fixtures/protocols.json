@@ -1,0 +1,14 @@
+{
+  "liquidStaking": {
+    "name": "PaperLido-style",
+    "receiptToken": "stETH",
+    "underlying": "ETH",
+    "aprHintPct": 3.2,
+    "note": "PAPER protocol — not a live staking contract"
+  },
+  "dex": {
+    "name": "PaperDEX",
+    "feeBps": 10,
+    "note": "PAPER AMM — local ledger only"
+  }
+}

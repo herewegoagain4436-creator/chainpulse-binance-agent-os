@@ -1,0 +1,28 @@
+{
+  "name": "chainpulse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ChainPulse — onchain staking & multi-app DeFi workflows for Binance Agent OS Mini Hackathon 2026 (Track A)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview",
+    "demo": "tsx src/cli/demo.ts",
+    "cli": "tsx src/cli/index.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3"
+  }
+}
