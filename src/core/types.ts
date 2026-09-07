@@ -21,6 +21,7 @@ export type StepStatus =
   | "pending"
   | "running"
   | "done"
+  | "awaiting_confirm"
   | "rejected"
   | "rolled_back"
   | "skipped";
@@ -62,6 +63,15 @@ export interface WorkflowStep {
   detail?: string;
   /** Compensating action note for saga-style rollback */
   rollbackNote?: string;
+  /** Rules-based explainable rationale (no LLM) */
+  rationale?: {
+    action: string;
+    headline: string;
+    why: string;
+    factors: string[];
+  };
+  /** Live ack honesty: PENDING | REJECTED | FILLED_PAPER | … */
+  liveOutcome?: string;
   startedAt?: string;
   finishedAt?: string;
 }
@@ -99,6 +109,7 @@ export interface StepLogEntry {
   status: StepStatus;
   message: string;
   notionalUsd?: number;
+  rationaleWhy?: string;
 }
 
 export interface OrchestratorSnapshot {

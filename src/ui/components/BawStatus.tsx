@@ -38,9 +38,13 @@ export function BawStatus({ snap }: { snap: OrchestratorSnapshot }) {
         x402 ${baw.remainingUsd?.x402}
       </p>
       <p className="sub">{baw.label}</p>
+      <p className="sub" style={{ marginTop: 8 }}>
+        Auth: baw auth signin → Binance App QR → verify until CONNECTED. Live
+        mutates stay PENDING until App confirms.
+      </p>
       <p className="sub" style={{ marginTop: 10 }}>
         <strong>MCP (optional):</strong> {mcp.endpoint} · oauth_client_id=
-        {mcp.oauthClientId}
+        {mcp.oauthClientId} (example; hosts flexible)
       </p>
       <p className="sub">{mcp.label}</p>
     </div>

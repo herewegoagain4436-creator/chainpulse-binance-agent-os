@@ -54,11 +54,11 @@ export function App() {
       orchRef.current = freshOrch();
       const orch = orchRef.current;
       const a = await orch.runWorkflow(
-        stakeEthWorkflow({ ethAmount: 1, id: "ui-stake" }),
+        stakeEthWorkflow({ ethAmount: 0.5, id: "ui-stake" }),
         { confirmed: true }
       );
       const b = await orch.runWorkflow(
-        swapThenStakeWorkflow({ usdtAmount: 3200, id: "ui-swap-stake" }),
+        swapThenStakeWorkflow({ usdtAmount: 1500, id: "ui-swap-stake" }),
         { confirmed: true }
       );
       const c = await orch.runWorkflow(
@@ -115,9 +115,12 @@ export function App() {
             Chain<span>Pulse</span>
           </h1>
           <p className="sub">
-            Track A onchain workflows via Binance Agentic Wallet CLI (baw).
-            LIVE-first on BSC. Auth: baw auth signin → App QR → verify. No
-            external withdrawals. MCP optional for CEX context.
+            Automated on-chain workflows (swap / stake / DeFi) via Binance
+            Agentic Wallet CLI (baw). LIVE-first on BSC with documented daily
+            caps and App confirmations. Auth: baw auth signin → App QR →
+            verify (Hub Connect alone is not enough). Pending ≠ filled
+            success. Not CEX news trading; not A2A micropay (x402 = quota
+            only). MCP optional for CEX context — hosts flexible.
           </p>
         </div>
         <div className="actions">
@@ -179,11 +182,11 @@ export function App() {
       </div>
 
       <p className="disclaimer">
-        Not financial advice. LIVE uses baw CLI / App confirmations. Paper only when
-        CHAINPULSE_MODE=paper. Real quotas: swap ~$50k / DeFi ~$5k /
-        x402 ~$20 per day. Confirm live quotas in
-        the Binance App. Agent OS paths require user confirmation; no withdrawal
-        scope.
+        Not financial advice. LIVE uses baw CLI / App confirmations — mutates
+        label PENDING until confirmed (never fake fills). Paper only when
+        CHAINPULSE_MODE=paper. Documented quotas (defaults, not guarantees):
+        swap ~$50k / DeFi ~$5k / x402 ~$20 per day. Confirm in the Binance
+        App. No withdrawal scope. See JUDGE.md for the 60–90s demo path.
       </p>
     </div>
   );

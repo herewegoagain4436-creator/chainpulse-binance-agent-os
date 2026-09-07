@@ -63,7 +63,17 @@ export function WorkflowList({ workflows }: { workflows: WorkflowRun[] }) {
                   <td className={`status-${s.status}`}>{s.status}</td>
                   <td className="mono">${s.notionalUsd}</td>
                   <td className="sub" style={{ fontSize: "0.78rem" }}>
+                    {s.liveOutcome ? (
+                      <div className="mono" style={{ marginBottom: 4 }}>
+                        outcome={s.liveOutcome}
+                      </div>
+                    ) : null}
                     {s.detail}
+                    {s.rationale ? (
+                      <div style={{ marginTop: 4 }}>
+                        <strong>{s.rationale.action}</strong>: {s.rationale.why}
+                      </div>
+                    ) : null}
                     {s.rollbackNote ? (
                       <div style={{ marginTop: 4 }}>rollback: {s.rollbackNote}</div>
                     ) : null}

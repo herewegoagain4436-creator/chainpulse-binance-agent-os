@@ -164,7 +164,19 @@ print("empty" if is_empty(d) else "nonempty")
   fi
 fi
 
+
 echo
+echo "========== JUDGE CHECKLIST (ChainPulse / Track A) =========="
+echo "HOOK: Automated on-chain workflows (swap/stake/DeFi) via BAW — caps + App confirmations."
+echo "  · NOT NewsPulse (CEX news trading)"
+echo "  · NOT PayPulse (A2A micropay); x402 is wallet quota only"
+echo "Auth: baw auth signin → App QR → verify until CONNECTED (Hub Connect alone is not enough)"
+echo "Caps (documented defaults): swap ~USD50k / defi ~USD5k / x402 ~USD20 per day"
+echo "Honesty: PENDING = awaiting App confirm (not success); REJECTED = clear reason; no fake live fills"
+echo "Demo: see JUDGE.md (60-90s). Rationales: why swap/stake/skip (rules-based)."
+echo "============================================================"
+echo
+
 if [[ $FAIL -eq 0 ]]; then
   echo "SUMMARY pass ($PASS checks)"
   [[ -n "$SKIP_NOTE" ]] && echo "$SKIP_NOTE"

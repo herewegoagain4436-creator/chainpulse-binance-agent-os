@@ -2,6 +2,8 @@
 
 ChainPulse is **BAW-first** (onchain workflows). MCP is optional context only.
 
+Product differentiation: automated on-chain staking / DeFi / swaps under documented caps — not a CEX news-trading bot, not an A2A micropay product (x402 appears only as a wallet quota bucket).
+
 ## 1) BAW — Binance Wallet Agentic Hub (primary)
 
 | Key | Value |
@@ -42,11 +44,11 @@ LIVE interface: balances, approve, stake, unstake, swap, daily-cap checks, kill-
 |-----|-------|
 | URL | https://agent.binance.com/mcp/agentic |
 | Auth | Client OAuth flow — no API keys stored on device |
-| OAuth client id (Grok) | grok |
+| OAuth client id (example) | grok (other Agent OS hosts may differ) |
 
 ### Grok CLI setup (reference)
 
-    add binance-mcp-server with url=https://agent.binance.com/mcp/agentic oauth_client_id=grok
+    add binance-mcp-server with url=https://agent.binance.com/mcp/agentic oauth_client_id=grok (example; hosts flexible)
 
 Do not open the MCP endpoint in a browser. Use the MCP client / OAuth flow only.
 
@@ -75,6 +77,6 @@ ChainPulse does not place CEX orders in the demo — MCP is noted for price/cont
 ## Safety
 
 - Never put Binance API secret keys in .env for Agent OS — MCP auth is OAuth.
-- Prefer live smoke for demos; paper is an offline escape hatch.
+- Prefer live smoke for demos; paper is an offline escape hatch. Live mutates must label pending until App confirms — never silent filled success.
 - Kill-switch + risk limits apply before BAW mutating steps.
 - No external withdrawals in this product.

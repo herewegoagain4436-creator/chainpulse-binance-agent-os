@@ -1,13 +1,14 @@
 /**
  * Workflow orchestrator — saga-style step runner with risk gates + BAW calls.
- * Each mutating step records a rollback note; on rejection, prior steps are marked
- * with rollback guidance (paper mode does not auto-compensate ledger — notes only).
+ * Each mutating step records a rollback note + rules-based rationale.
+ * Live submits are labeled PENDING (awaiting App confirm) — never silent fills.
  */
 import {
   BawWalletAdapter,
   type BawMode,
 } from "../adapters/bawWallet.js";
 import { mcpStatusNote } from "../adapters/mcpContext.js";
+import { explainStep } from "./rationale.js";
 import {
   DEFAULT_RISK,
   createRiskState,
@@ -30,6 +31,12 @@ export interface RunOptions {
   confirmed: boolean;
   /** Override risk for a single run (e.g. demo over-cap still needs confirm) */
   cfg?: RiskConfig;
+}
+
+function isPendingOutcome(status?: string, detail?: string): boolean {
+  const s = (status ?? "").toUpperCase();
+  if (s === "PENDING" || s === "SUBMITTED_LIVE_PENDING") return true;
+  return /PENDING/i.test(detail ?? "");
 }
 
 export class WorkflowOrchestrator {
@@ -74,6 +81,23 @@ export class WorkflowOrchestrator {
     };
   }
 
+  private attachRationale(step: WorkflowStep): void {
+    const st = this.baw.status();
+    step.rationale = explainStep({
+      kind: step.kind,
+      label: step.label,
+      status: step.status,
+      notionalUsd: step.notionalUsd,
+      detail: step.detail,
+      assetIn: step.assetIn,
+      assetOut: step.assetOut,
+      amountIn: step.amountIn,
+      remainingSwapUsd: st.remainingUsd?.swap,
+      remainingDefiUsd: st.remainingUsd?.defi,
+      connectionStatus: String(st.connectionStatus ?? ""),
+    });
+  }
+
   private log(
     run: WorkflowRun,
     step: WorkflowStep,
@@ -88,6 +112,7 @@ export class WorkflowOrchestrator {
       status,
       message,
       notionalUsd: step.notionalUsd,
+      rationaleWhy: step.rationale?.why,
     });
   }
 
@@ -113,8 +138,9 @@ export class WorkflowOrchestrator {
   private annotateRollback(run: WorkflowRun, failedIndex: number, reason: string): void {
     for (let i = 0; i < failedIndex; i++) {
       const s = run.steps[i];
-      if (s.status === "done") {
+      if (s.status === "done" || s.status === "awaiting_confirm") {
         s.detail = `${s.detail ?? ""} | ROLLBACK NOTE: ${s.rollbackNote ?? "manual review"} (triggered by: ${reason})`;
+        this.attachRationale(s);
       }
     }
   }
@@ -128,18 +154,13 @@ export class WorkflowOrchestrator {
     if (!opts.confirmed && cfg.requireWorkflowConfirm) {
       run.status = "awaiting_confirm";
       run.rejectReason = "workflow requires explicit confirm before execution";
-      this.log(
-        run,
-        run.steps[0] ?? {
-          id: "n/a",
-          kind: "confirm",
-          label: "confirm",
-          notionalUsd: 0,
-          status: "rejected",
-        },
-        "rejected",
-        run.rejectReason
-      );
+      const s0 = run.steps[0];
+      if (s0) {
+        s0.status = "rejected";
+        s0.detail = run.rejectReason;
+        this.attachRationale(s0);
+        this.log(run, s0, "rejected", run.rejectReason);
+      }
       return run;
     }
 
@@ -157,12 +178,14 @@ export class WorkflowOrchestrator {
       if (run.steps[0]) {
         run.steps[0].status = "rejected";
         run.steps[0].detail = gate.reason;
+        this.attachRationale(run.steps[0]);
         this.log(run, run.steps[0], "rejected", gate.reason ?? "gate fail");
       }
       return run;
     }
 
     run.status = "running";
+    let sawPending = false;
 
     for (let i = 0; i < run.steps.length; i++) {
       const step = run.steps[i];
@@ -173,13 +196,15 @@ export class WorkflowOrchestrator {
       if (!stepGate.ok) {
         step.status = "rejected";
         step.detail = stepGate.reason;
+        step.liveOutcome = "REJECTED";
         step.finishedAt = new Date().toISOString();
+        this.attachRationale(step);
         this.log(run, step, "rejected", stepGate.reason ?? "step gate fail");
         this.annotateRollback(run, i, stepGate.reason ?? "step gate");
-        // Mark remaining as skipped
         for (let j = i + 1; j < run.steps.length; j++) {
           run.steps[j].status = "skipped";
           run.steps[j].detail = "skipped after prior rejection";
+          this.attachRationale(run.steps[j]);
         }
         run.status = "rejected";
         run.rejectReason = stepGate.reason;
@@ -189,15 +214,19 @@ export class WorkflowOrchestrator {
 
       const exec = await this.executeStep(step);
       step.finishedAt = new Date().toISOString();
+      step.liveOutcome = exec.liveOutcome;
 
       if (!exec.ok) {
         step.status = "rejected";
         step.detail = exec.detail;
+        step.liveOutcome = exec.liveOutcome ?? "REJECTED";
+        this.attachRationale(step);
         this.log(run, step, "rejected", exec.detail);
         this.annotateRollback(run, i, exec.detail);
         for (let j = i + 1; j < run.steps.length; j++) {
           run.steps[j].status = "skipped";
           run.steps[j].detail = "skipped after prior rejection";
+          this.attachRationale(run.steps[j]);
         }
         run.status = "rejected";
         run.rejectReason = exec.detail;
@@ -205,24 +234,33 @@ export class WorkflowOrchestrator {
         return run;
       }
 
-      step.status = "done";
+      if (isPendingOutcome(exec.liveOutcome, exec.detail)) {
+        step.status = "awaiting_confirm";
+        sawPending = true;
+      } else {
+        step.status = "done";
+      }
       step.amountOut = exec.amountOut;
       step.detail = exec.detail;
+      this.attachRationale(step);
       recordStep(this.riskState);
-      this.log(run, step, "done", exec.detail);
+      this.log(run, step, step.status, exec.detail);
     }
 
-    run.status = "completed";
+    run.status = sawPending ? "awaiting_confirm" : "completed";
     run.finishedAt = new Date().toISOString();
+    if (sawPending) {
+      run.label = `${run.label} | live steps PENDING App confirm (not filled success)`;
+    }
     return run;
   }
 
   private async executeStep(
     step: WorkflowStep
-  ): Promise<{ ok: boolean; detail: string; amountOut?: number }> {
+  ): Promise<{ ok: boolean; detail: string; amountOut?: number; liveOutcome?: string }> {
     switch (step.kind) {
       case "confirm":
-        return { ok: true, detail: "confirmed" };
+        return { ok: true, detail: "confirmed", liveOutcome: "CONFIRMED" };
 
       case "check_cap": {
         const bucket =
@@ -236,6 +274,7 @@ export class WorkflowOrchestrator {
         return {
           ok: res.ok,
           detail: res.label,
+          liveOutcome: res.ok ? "CAP_OK" : "REJECTED",
         };
       }
 
@@ -244,11 +283,14 @@ export class WorkflowOrchestrator {
           asset: step.assetIn ?? "ETH",
           amount: step.amountIn ?? 0,
         });
-        return { ok: res.ok, detail: res.label };
+        return {
+          ok: res.ok,
+          detail: res.label,
+          liveOutcome: res.data.status,
+        };
       }
 
       case "swap": {
-        // Cap check baked into adapter
         const res = await this.baw.swap({
           fromAsset: step.assetIn ?? "USDT",
           toAsset: step.assetOut ?? "ETH",
@@ -259,6 +301,7 @@ export class WorkflowOrchestrator {
           ok: res.ok,
           detail: res.label,
           amountOut: res.data.amountOut,
+          liveOutcome: res.data.status,
         };
       }
 
@@ -273,6 +316,7 @@ export class WorkflowOrchestrator {
           ok: res.ok,
           detail: res.label,
           amountOut: res.data.amountOut,
+          liveOutcome: res.data.status,
         };
       }
 
@@ -287,6 +331,7 @@ export class WorkflowOrchestrator {
           ok: res.ok,
           detail: res.label,
           amountOut: res.data.amountOut,
+          liveOutcome: res.data.status,
         };
       }
 
@@ -294,10 +339,11 @@ export class WorkflowOrchestrator {
         return {
           ok: true,
           detail: "PAPER internal transfer (no external withdrawal) — no-op ledger",
+          liveOutcome: "INTERNAL",
         };
 
       default:
-        return { ok: false, detail: `unknown step kind: ${step.kind}` };
+        return { ok: false, detail: `unknown step kind: ${step.kind}`, liveOutcome: "REJECTED" };
     }
   }
 }

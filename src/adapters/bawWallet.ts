@@ -58,7 +58,7 @@ export interface StakeAck {
   amountIn: number;
   amountOut: number;
   notionalUsd: number;
-  status: "FILLED_PAPER" | "SUBMITTED_MOCK" | "SUBMITTED_LIVE" | "REJECTED";
+  status: "FILLED_PAPER" | "SUBMITTED_MOCK" | "PENDING" | "REJECTED";
   investmentId?: string;
 }
 
@@ -69,7 +69,7 @@ export interface UnstakeAck {
   amountIn: number;
   amountOut: number;
   notionalUsd: number;
-  status: "FILLED_PAPER" | "SUBMITTED_MOCK" | "SUBMITTED_LIVE" | "REJECTED";
+  status: "FILLED_PAPER" | "SUBMITTED_MOCK" | "PENDING" | "REJECTED";
 }
 
 export interface SwapAck {
@@ -79,7 +79,7 @@ export interface SwapAck {
   amountIn: number;
   amountOut: number;
   notionalUsd: number;
-  status: "FILLED_PAPER" | "SUBMITTED_MOCK" | "SUBMITTED_LIVE" | "REJECTED";
+  status: "FILLED_PAPER" | "SUBMITTED_MOCK" | "PENDING" | "REJECTED";
   remainingCapUsd: number;
 }
 
@@ -367,7 +367,7 @@ export class BawWalletAdapter {
       remainingUsd: remaining,
       label: this.metaLabel(this.mode !== "live"),
       note:
-        "Caps from Agentic Wallet settings / public defaults — not invented guarantees; confirm in Binance App. Auth = baw auth signin → App QR → verify.",
+        "Caps from Agentic Wallet settings / public defaults — not invented guarantees; confirm in Binance App. Auth = baw auth signin → App QR → verify. Live mutates label PENDING until App confirms — never silent FILLED.",
       noWithdrawals: true,
       liveReady: this.liveReady,
     };
@@ -582,7 +582,7 @@ export class BawWalletAdapter {
           status: "APPROVED_LIVE",
         },
         usedMock: false,
-        label: `LIVE approve implicit — baw market-order/defi handles allowance for ${opts.amount} ${asset}`,
+        label: `LIVE approve implicit (not a fill) — baw market-order/defi handles allowance for ${opts.amount} ${asset}; mutating steps still need App confirm`,
         hubUrl: this.hubUrl,
         rail: "BAW",
         ok: true,
@@ -801,11 +801,11 @@ export class BawWalletAdapter {
           amountIn: opts.amountIn,
           amountOut,
           notionalUsd: opts.notionalUsd,
-          status: "SUBMITTED_LIVE",
+          status: "PENDING",
           remainingCapUsd: this.remainingCap("swap"),
         },
         usedMock: false,
-        label: `LIVE swap submitted orderId=${swapId} ${opts.amountIn} ${from} → ~${amountOut} ${to} (may need App confirm / settle)`,
+        label: `PENDING — live swap submitted orderId=${swapId} ${opts.amountIn} ${from} → ~${amountOut} ${to}; awaiting Binance App confirmation / settlement (NOT a filled success)`,
         hubUrl: this.hubUrl,
         rail: "BAW",
         ok: true,
@@ -1073,11 +1073,11 @@ export class BawWalletAdapter {
         amountIn: opts.amount,
         amountOut: opts.amount,
         notionalUsd: opts.amount,
-        status: "SUBMITTED_LIVE",
+        status: "PENDING",
         investmentId: opts.investmentId,
       },
       usedMock: false,
-      label: `LIVE defi deposit ${opts.amount} USDT → investment ${opts.investmentId}`,
+      label: `PENDING — live defi deposit ${opts.amount} USDT → investment ${opts.investmentId}; awaiting Binance App confirmation (NOT a filled success)`,
       hubUrl: this.hubUrl,
       rail: "BAW",
       ok: true,

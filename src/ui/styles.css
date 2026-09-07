@@ -41,7 +41,7 @@ button.secondary { background: transparent; color: var(--text); border: 1px soli
 button:disabled { opacity: 0.5; cursor: wait; }
 .status-completed, .status-done, .ok { color: var(--ok); font-weight: 600; }
 .status-rejected, .bad { color: var(--bad); font-weight: 600; }
-.status-running, .status-awaiting_confirm { color: var(--warn); }
+.status-running, .status-awaiting_confirm { color: var(--warn); } /* pending honesty: awaiting App confirm */
 .status-skipped, .status-pending { color: var(--hold); }
 .disclaimer { margin-top: 18px; color: var(--muted); font-size: 0.8rem; line-height: 1.45; border-top: 1px solid var(--border); padding-top: 14px; }
 .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); font-family: var(--mono); font-size: 0.72rem; }

@@ -20,7 +20,7 @@ export function stakeEthWorkflow(opts?: {
     kind: "stake_eth",
     name: "Automated ETH liquid-stake",
     description:
-      "Paper liquid-stake: approve staking protocol → stake ETH → mint stETH receipt token (BAW DeFi path).",
+      "Liquid-stake: approve staking protocol → stake ETH → mint stETH receipt token (BAW DeFi path).",
     estimatedNotionalUsd: notional,
     steps: [
       {

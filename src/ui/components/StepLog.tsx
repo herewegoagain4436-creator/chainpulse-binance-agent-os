@@ -15,6 +15,9 @@ export function StepLog({ entries }: { entries: StepLogEntry[] }) {
             {e.notionalUsd != null ? (
               <span> · ${e.notionalUsd}</span>
             ) : null}
+            {e.rationaleWhy ? (
+              <div style={{ fontSize: "0.72rem", marginTop: 2 }}>why: {e.rationaleWhy}</div>
+            ) : null}
             <div style={{ fontSize: "0.7rem" }}>
               {e.at} · wf={e.workflowId} · step={e.stepId}
             </div>

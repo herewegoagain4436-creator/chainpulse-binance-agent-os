@@ -3,7 +3,7 @@
  * ChainPulse is BAW-first (onchain); MCP is optional context only.
  *
  * Endpoint: https://agent.binance.com/mcp/agentic
- * OAuth: oauth_client_id=grok — no API keys on device.
+ * OAuth: example oauth_client_id=grok — other Agent OS hosts may differ.
  * Do NOT open the MCP URL in a browser.
  */
 import { envStr } from "../core/env.js";
@@ -25,8 +25,8 @@ export function mcpStatusNote() {
     endpoint: MCP_ENDPOINT,
     oauthClientId: MCP_OAUTH_CLIENT_ID,
     label:
-      "OPTIONAL MCP — CEX market/context via OAuth (oauth_client_id=grok). ChainPulse executes onchain via BAW, not MCP orders.",
-    note: "Do not open MCP URL in a browser. No device API keys. No withdrawals.",
+      "OPTIONAL MCP — CEX market/context via OAuth. Example oauth_client_id=grok (other Agent OS hosts may differ). ChainPulse executes on-chain via BAW, not MCP orders.",
+    note: "Do not open MCP URL in a browser. No device API keys. No withdrawals. Flexible host — Grok is one optional example.",
     fixturePrices: prices as Record<string, number>,
   };
 }
