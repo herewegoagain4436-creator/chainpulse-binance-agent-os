@@ -1,0 +1,363 @@
+=== live-smoke: using baw at /home/box/.local/bin/baw ===
+=== 2026-09-07T02:59:40Z UTC ===
+
+----- wallet status -----
++ /home/box/.local/bin/baw wallet status --json
+{
+  "success": true,
+  "data": {
+    "status": "CONNECTED"
+  }
+}
+RESULT: PASS (wallet status)
+connection_fields=CONNECTED
+STATUS: CONNECTED OK
+
+----- wallet address -----
++ /home/box/.local/bin/baw wallet address --json
+{
+  "success": true,
+  "data": {
+    "addresses": [
+      {
+        "binanceChainId": "CT_501",
+        "chainName": "Solana",
+        "address": "Bq7jLJDYTk1qe9nsoCBgJvEWMxhuv9Rzkgyh7Nh5CNvr"
+      },
+      {
+        "binanceChainId": "1",
+        "chainName": "Ethereum",
+        "address": "0xC2708cF97F8A65d4bCA9A6ec4196CE4a352e6593"
+      },
+      {
+        "binanceChainId": "137",
+        "chainName": "Polygon",
+        "address": "0xC2708cF97F8A65d4bCA9A6ec4196CE4a352e6593"
+      },
+      {
+        "binanceChainId": "42161",
+        "chainName": "Arbitrum",
+        "address": "0xC2708cF97F8A65d4bCA9A6ec4196CE4a352e6593"
+      },
+      {
+        "binanceChainId": "4663",
+        "chainName": "Robinhood",
+        "address": "0xC2708cF97F8A65d4bCA9A6ec4196CE4a352e6593"
+      },
+      {
+        "binanceChainId": "56",
+        "chainName": "BSC",
+        "address": "0xC2708cF97F8A65d4bCA9A6ec4196CE4a352e6593"
+      },
+      {
+        "binanceChainId": "8453",
+        "chainName": "Base",
+        "address": "0xC2708cF97F8A65d4bCA9A6ec4196CE4a352e6593"
+      }
+    ]
+  }
+}
+RESULT: PASS (wallet address)
+----- wallet balance -----
++ /home/box/.local/bin/baw wallet balance --json
+{
+  "success": true,
+  "data": [
+    {
+      "symbol": "BNB",
+      "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+      "binanceChainId": "56",
+      "balance": "0.002",
+      "price": "747.588249606942567915448469266127080124",
+      "value": "1.4951764992138852"
+    },
+    {
+      "symbol": "USDT",
+      "address": "0x55d398326f99059fF775485246999027B3197955",
+      "binanceChainId": "56",
+      "balance": "7.425382962512292581",
+      "price": "0.999990375760682118436330649733529879",
+      "value": "7.425311498849635"
+    }
+  ]
+}
+RESULT: PASS (wallet balance)
+----- wallet settings -----
++ /home/box/.local/bin/baw wallet settings --json
+{
+  "success": true,
+  "data": {
+    "maxSigninDuration": "48h",
+    "dailyLimit": 50000,
+    "abnormalTxnHandling": "AutoReject",
+    "inactiveSignoutDuration": "48h",
+    "tradeAllTokens": false,
+    "predictionEnabled": false,
+    "predictionDailyLimit": 5000,
+    "predictionQuotaUsed": 0,
+    "predictionQuotaLeft": 5000,
+    "predictionQuotaDate": "2026-09-07",
+    "defiDailyLimit": 5000,
+    "defiQuotaUsed": 0,
+    "defiQuotaLeft": 5000,
+    "defiQuotaDate": "2026-09-07",
+    "x402DailyLimit": 20,
+    "x402QuotaUsed": 0,
+    "x402QuotaLeft": 20,
+    "x402QuotaDate": "2026-09-07",
+    "developerModeQuotaUsed": 0,
+    "developerModeQuotaDate": "2026-09-07",
+    "quotaUsed": 0.9999568194334744,
+    "quotaLeft": 49999.00004318057,
+    "quotaDate": "2026-09-07",
+    "devMode": {
+      "enabled": false,
+      "expiresAt": null,
+      "dailyLimit": 1000,
+      "balanceExceeded": false
+    },
+    "sessionExpireTime": "2026-09-09T02:59:43+00:00",
+    "signInMaxTime": "2026-09-14T02:53:35+00:00",
+    "inactiveSignOutTime": "2026-09-09T02:59:43+00:00"
+  }
+}
+RESULT: PASS (wallet settings)
+----- wallet left-quota -----
++ /home/box/.local/bin/baw wallet left-quota --json
+{
+  "success": true,
+  "data": {
+    "quotaUsed": 0.9999568194334744,
+    "quotaLeft": 49999.00004318057,
+    "dailyLimit": 50000,
+    "date": "2026-09-07"
+  }
+}
+RESULT: PASS (wallet left-quota)
+----- wallet chains -----
++ /home/box/.local/bin/baw wallet chains --json
+{
+  "success": true,
+  "data": [
+    {
+      "binanceChainId": "8453",
+      "name": "Base",
+      "simpleName": "Base"
+    },
+    {
+      "binanceChainId": "56",
+      "name": "BNB Smart Chain",
+      "simpleName": "BSC"
+    },
+    {
+      "binanceChainId": "1",
+      "name": "Ethereum",
+      "simpleName": "Ethereum"
+    },
+    {
+      "binanceChainId": "137",
+      "name": "Polygon",
+      "simpleName": "Polygon"
+    },
+    {
+      "binanceChainId": "4663",
+      "name": "Robinhood",
+      "simpleName": "Robinhood"
+    },
+    {
+      "binanceChainId": "CT_501",
+      "name": "Solana",
+      "simpleName": "Solana"
+    },
+    {
+      "binanceChainId": "42161",
+      "name": "Arbitrum One",
+      "simpleName": "Arbitrum"
+    }
+  ]
+}
+RESULT: PASS (wallet chains)
+----- defi position -----
++ /home/box/.local/bin/baw defi position --json
+{
+  "success": true,
+  "data": {
+    "deFiTotalValue": "0",
+    "deFiProtocolVOList": []
+  }
+}
+RESULT: PASS (defi position)
+----- defi protocol-list -----
++ /home/box/.local/bin/baw defi protocol-list --json
+{
+  "success": true,
+  "data": {
+    "total": 10,
+    "list": [
+      {
+        "defiProtocolId": "aave3",
+        "protocolName": "Aave V3",
+        "description": null,
+        "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20241028/dcb5bfbf-cbe2-4ddd-a7b3-3a22c3e45a27.png",
+        "tvl": "17629599259",
+        "apy": null,
+        "investType": [
+          "Earn"
+        ],
+        "supportedChains": [
+          "56"
+        ],
+        "apyBps": 895,
+        "apyDisplay": "8.95%"
+      },
+      {
+        "defiProtocolId": "uniswap3",
+        "protocolName": "Uniswap V3",
+        "description": null,
+        "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20260318/290f0a92-454d-4e9f-9b51-6e59ecfbf0e9.png",
+        "tvl": "1549070432",
+        "apy": null,
+        "investType": [
+          "LiquidityPool"
+        ],
+        "supportedChains": [
+          "56"
+        ],
+        "apyBps": 1398271,
+        "apyDisplay": "13,982.71%"
+      },
+      {
+        "defiProtocolId": "helio",
+        "protocolName": "Lista",
+        "description": null,
+        "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20240927/cee2f697-b4ea-4baf-955d-858d9eeac4f3.png",
+        "tvl": "1383086334.86",
+        "apy": null,
+        "investType": [
+          "Earn"
+        ],
+        "supportedChains": [
+          "56"
+        ],
+        "apyBps": 570,
+        "apyDisplay": "5.70%"
+      },
+      {
+        "defiProtocolId": "venus",
+        "protocolName": "Venus",
+        "description": null,
+        "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20241028/0d696959-4857-4e0d-a2b5-3022264d34b5.jpg",
+        "tvl": "1315669868",
+        "apy": null,
+        "investType": [
+          "Earn"
+        ],
+        "supportedChains": [
+          "56"
+        ],
+        "apyBps": 658,
+        "apyDisplay": "6.58%"
+      },
+      {
+        "defiProtocolId": "uniswap4",
+        "protocolName": "Uniswap V4",
+        "description": null,
+        "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20260429/258f36e1-a75b-4aef-b708-a2a571f28dbb.png",
+        "tvl": "1022564651",
+        "apy": null,
+        "investType": [
+          "LiquidityPool"
+        ],
+        "supportedChains": [
+          "56"
+        ],
+        "apyBps": 34535,
+        "apyDisplay": "345.35%"
+      },
+      {
+        "defiProtocolId": "astherus",
+        "protocolName": "Aster",
+        "description": null,
+        "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20250911/898fedd6-5bf3-4c89-a02c-aadf5c056553.jpg",
+        "tvl": "855607413",
+        "apy": null,
+        "investType": [
+          "Earn"
+        ],
+        "supportedChains": [
+          "56"
+        ],
+        "apyBps": 150,
+        "apyDisplay": "1.50%"
+      },
+      {
+        "defiProtocolId": "pancakeswap3",
+        "protocolName": "PancakeSwap V3",
+        "description": null,
+        "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20250527/06ab0ee1-8382-4416-9395-15446112b09b.png",
+        "tvl": "324693860",
+        "apy": null,
+        "investType": [
+          "LiquidityPool"
+        ],
+        "supportedChains": [
+          "56"
+        ],
+        "apyBps": 1747256,
+        "apyDisplay": "17,472.56%"
+      },
+      {
+        "defiProtocolId": "solv",
+        "protocolName": "Solv",
+        "description": null,
+        "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20240814/d8d2fee4-9497-40cb-b58d-bc5af2479042.jpg",
+        "tvl": "197254892",
+        "apy": null,
+        "investType": [
+          "Earn"
+        ],
+        "supportedChains": [
+          "56"
+        ],
+        "apyBps": 311,
+        "apyDisplay": "3.11%"
+      },
+      {
+        "defiProtocolId": "pancakeswap4",
+        "protocolName": "PancakeSwap Infinity",
+        "description": null,
+        "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20260429/82a1ef2e-7855-4db7-af87-7d006ad15558.png",
+        "tvl": "70402104",
+        "apy": null,
+        "investType": [
+          "LiquidityPool"
+        ],
+        "supportedChains": [
+          "56"
+        ],
+        "apyBps": 60791,
+        "apyDisplay": "607.91%"
+      },
+      {
+        "defiProtocolId": "venusflux",
+        "protocolName": "Venus Flux",
+        "description": null,
+        "protocolLogo": "https://bin.bnbstatic.com/images/web3-data/public/protocol/logos/92bb55c3792140b985942a513530b5dd.png",
+        "tvl": "2942076",
+        "apy": null,
+        "investType": [
+          "Earn"
+        ],
+        "supportedChains": [
+          "56"
+        ],
+        "apyBps": 440,
+        "apyDisplay": "4.40%"
+      }
+    ]
+  }
+}
+RESULT: PASS (defi protocol-list)
+
+SUMMARY pass (8 checks)
+LIVE_SMOKE_PASS

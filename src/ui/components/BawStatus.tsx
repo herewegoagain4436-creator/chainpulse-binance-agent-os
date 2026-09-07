@@ -5,6 +5,9 @@ export function BawStatus({ snap }: { snap: OrchestratorSnapshot }) {
     hubUrl?: string;
     mode?: string;
     killSwitch?: boolean;
+    connectionStatus?: string;
+    address?: string;
+    chainId?: string;
     documentedCapsUsd?: { swap: number; defi: number; x402: number };
     remainingUsd?: { swap: number; defi: number; x402: number };
     label?: string;
@@ -18,19 +21,21 @@ export function BawStatus({ snap }: { snap: OrchestratorSnapshot }) {
 
   return (
     <div className="card half">
-      <h2>BAW status</h2>
+      <h2>BAW status (live)</h2>
       <p className="mono">{baw.hubUrl}</p>
       <p className="sub">
-        mode={baw.mode} · kill-switch={String(baw.killSwitch)} · steps today=
+        mode={baw.mode} · wallet={baw.connectionStatus} · chain={baw.chainId} ·
+        kill-switch={String(baw.killSwitch)} · steps today=
         {snap.risk.stepsToday}/{snap.risk.maxStepsPerDay}
       </p>
+      <p className="mono sub">{baw.address || "address pending"}</p>
       <p className="sub">
-        documented caps (defaults): swap ${baw.documentedCapsUsd?.swap}/d · defi $
+        caps: swap ${baw.documentedCapsUsd?.swap}/d · defi $
         {baw.documentedCapsUsd?.defi}/d · x402 ${baw.documentedCapsUsd?.x402}/d
       </p>
       <p className="sub">
-        remaining: swap ${baw.remainingUsd?.swap} · defi ${baw.remainingUsd?.defi} · x402 $
-        {baw.remainingUsd?.x402}
+        remaining: swap ${baw.remainingUsd?.swap} · defi ${baw.remainingUsd?.defi} ·
+        x402 ${baw.remainingUsd?.x402}
       </p>
       <p className="sub">{baw.label}</p>
       <p className="sub" style={{ marginTop: 10 }}>

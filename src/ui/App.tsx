@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { WorkflowOrchestrator } from "../core/orchestrator";
 import {
   overCapSwapWorkflow,
@@ -13,7 +13,7 @@ import { WalletPanel } from "./components/WalletPanel";
 import { BawStatus } from "./components/BawStatus";
 
 function freshOrch() {
-  return new WorkflowOrchestrator({ mode: "paper" });
+  return new WorkflowOrchestrator();
 }
 
 export function App() {
@@ -28,6 +28,24 @@ export function App() {
   function refresh() {
     setSnap(orchRef.current.snapshot());
   }
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const baw = orchRef.current.baw;
+        const r = await baw.refreshLive();
+        if (cancelled) return;
+        await baw.getBalances();
+        if (cancelled) return;
+        setSnap(orchRef.current.snapshot());
+        if (!r.ok) setError(r.label);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
 
   async function runDemoSuite() {
     setLoading(true);
@@ -97,13 +115,13 @@ export function App() {
             Chain<span>Pulse</span>
           </h1>
           <p className="sub">
-            Track A onchain workflows: automated staking and multi-app DeFi
-            (swap → stake) via Binance Wallet Agentic Hub (BAW). Paper/sim
-            default; MCP optional for CEX context. No external withdrawals.
+            Track A onchain workflows via Binance Agentic Wallet CLI (baw).
+            LIVE-first on BSC. Auth: baw auth signin → App QR → verify. No
+            external withdrawals. MCP optional for CEX context.
           </p>
         </div>
         <div className="actions">
-          <span className="badge">mode: paper</span>
+          <span className="badge">mode: live</span>
           <span className="badge">BAW primary</span>
           <button onClick={runDemoSuite} disabled={loading}>
             {loading ? "Running…" : "Run demo suite"}
@@ -155,15 +173,15 @@ export function App() {
       </div>
 
       <div className="grid">
-        <WalletPanel balances={snap.balances} />
+        <WalletPanel balances={snap.balances} live note="live baw balances via adapter" />
         <WorkflowList workflows={snap.workflows} />
         <StepLog entries={snap.stepLog} />
       </div>
 
       <p className="disclaimer">
-        Not financial advice. PAPER/MOCK fills are not live on-chain
-        transactions. Documented BAW daily caps (swap ~$50k / DeFi ~$100k /
-        x402 ~$20) are public defaults — not guarantees. Confirm live quotas in
+        Not financial advice. LIVE uses baw CLI / App confirmations. Paper only when
+        CHAINPULSE_MODE=paper. Real quotas: swap ~$50k / DeFi ~$5k /
+        x402 ~$20 per day. Confirm live quotas in
         the Binance App. Agent OS paths require user confirmation; no withdrawal
         scope.
       </p>

@@ -8,8 +8,9 @@
     "dev": "vite",
     "build": "tsc -p tsconfig.json --noEmit && vite build",
     "preview": "vite preview",
-    "demo": "tsx src/cli/demo.ts",
-    "cli": "tsx src/cli/index.ts",
+    "demo": "node --import tsx --import ./scripts/baw-bridge.mjs src/cli/demo.ts",
+    "live-smoke": "bash scripts/live-smoke.sh",
+    "cli": "node --import tsx --import ./scripts/baw-bridge.mjs src/cli/index.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

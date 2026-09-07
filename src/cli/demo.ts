@@ -1,135 +1,128 @@
 /**
- * ChainPulse demo — asserts:
- *  1) successful stake workflow
- *  2) multi-app DeFi workflow (swap then stake)
- *  3) rejected over-cap attempt
+ * ChainPulse LIVE demo / smoke via baw CLI.
+ * Requires CONNECTED wallet. Quote is read-only.
+ * Mutating swap/deposit only when LIVE_MUTATE=1.
  */
-import { WorkflowOrchestrator } from "../core/orchestrator.js";
 import {
-  overCapSwapWorkflow,
-  stakeEthWorkflow,
-  swapThenStakeWorkflow,
-} from "../core/workflows.js";
-import { BAW_DOCUMENTED_DAILY_CAPS_USD } from "../adapters/bawWallet.js";
+  BAW_DOCUMENTED_DAILY_CAPS_USD,
+  BawWalletAdapter,
+  BSC_CHAIN_ID,
+  NATIVE_BNB,
+  USDT_BSC,
+} from "../adapters/bawWallet.js";
 import { mcpStatusNote } from "../adapters/mcpContext.js";
-import { DEFAULT_RISK } from "../core/risk.js";
-
-function printRun(
-  title: string,
-  run: Awaited<ReturnType<WorkflowOrchestrator["runWorkflow"]>>
-): void {
-  console.log(`\n-- ${title} --`);
-  console.log(`  id:     ${run.id}`);
-  console.log(`  name:   ${run.name}`);
-  console.log(`  status: ${run.status}`);
-  if (run.rejectReason) console.log(`  reject: ${run.rejectReason}`);
-  for (const s of run.steps) {
-    const mark =
-      s.status === "done"
-        ? "OK  "
-        : s.status === "rejected"
-          ? "REJ "
-          : s.status === "skipped"
-            ? "skip"
-            : s.status.padEnd(4);
-    console.log(
-      `  [${mark}] ${s.kind.padEnd(8)} ${s.label}  ($${s.notionalUsd})`
-    );
-    if (s.detail) console.log(`         ${s.detail}`);
-    if (s.status === "done" && s.rollbackNote) {
-      console.log(`         rollback-note: ${s.rollbackNote}`);
-    }
-  }
-}
+import { envBool, envNum, envStr } from "../core/env.js";
 
 async function main(): Promise<void> {
   console.log("===========================================================");
-  console.log(" ChainPulse DEMO — Track A / Binance Agent OS Mini Hackathon");
-  console.log(" Onchain Workflows via BAW (Wallet Agentic Hub)");
+  console.log(" ChainPulse LIVE DEMO — Track A / Binance Agent OS");
+  console.log(" Onchain via baw CLI (Binance Agentic Wallet)");
   console.log("===========================================================");
   console.log("");
 
-  const orch = new WorkflowOrchestrator({ mode: "paper" });
-  const baw = orch.baw.status();
-  const mcp = mcpStatusNote();
-
-  console.log("-- Rails --");
-  console.log(`  BAW (primary): ${baw.hubUrl}`);
-  console.log(`                ${baw.label}`);
-  console.log(
-    `                documented caps (defaults, not guarantees): swap=$${BAW_DOCUMENTED_DAILY_CAPS_USD.swap}/day, defi=$${BAW_DOCUMENTED_DAILY_CAPS_USD.defi}/day, x402=$${BAW_DOCUMENTED_DAILY_CAPS_USD.x402}/day`
-  );
-  console.log(`  MCP (optional): ${mcp.endpoint}`);
-  console.log(`                  oauth_client_id=${mcp.oauthClientId}`);
-  console.log(`                  ${mcp.label}`);
-  console.log("");
-  console.log("-- Risk --");
-  console.log(
-    `  maxNotionalPerStep=$${DEFAULT_RISK.maxNotionalPerStepUsd}  maxSteps/day=${DEFAULT_RISK.maxStepsPerDay}  killSwitch=${DEFAULT_RISK.killSwitch}  requireConfirm=${DEFAULT_RISK.requireWorkflowConfirm}`
-  );
-
-  const bal0 = orch.baw.snapshotBalances();
-  console.log("\n-- Paper wallet (before) --");
-  for (const b of bal0) {
-    console.log(`  ${b.asset.padEnd(6)} free=${b.free}`);
-  }
-
-  const stakeDef = stakeEthWorkflow({ ethAmount: 1, ethPriceUsd: 3200, id: "demo-stake" });
-  const stakeRun = await orch.runWorkflow(stakeDef, { confirmed: true });
-  printRun("1) Automated staking (ETH to stETH)", stakeRun);
-
-  const multiDef = swapThenStakeWorkflow({
-    usdtAmount: 3200,
-    ethPriceUsd: 3200,
-    id: "demo-swap-stake",
-  });
-  const multiRun = await orch.runWorkflow(multiDef, { confirmed: true });
-  printRun("2) Multi-app DeFi (swap USDT to ETH then stake)", multiRun);
-
-  const overDef = overCapSwapWorkflow({ usdtAmount: 75_000, id: "demo-over-cap" });
-  const overRun = await orch.runWorkflow(overDef, {
-    confirmed: true,
-    cfg: {
-      ...DEFAULT_RISK,
-      maxNotionalPerStepUsd: 100_000,
-    },
-  });
-  printRun("3) Over-cap attempt (expect REJECT)", overRun);
-
-  const bal1 = orch.baw.snapshotBalances();
-  console.log("\n-- Paper wallet (after) --");
-  for (const b of bal1) {
-    console.log(`  ${b.asset.padEnd(6)} free=${b.free}${b.staked ? ` staked=${b.staked}` : ""}`);
-  }
-
-  console.log("\n-- Demo assertions --");
-  const stakeOk = stakeRun.status === "completed";
-  const multiOk = multiRun.status === "completed";
-  const overRejected = overRun.status === "rejected";
-  const overCapReason =
-    (overRun.rejectReason ?? "").toLowerCase().includes("cap") ||
-    overRun.steps.some(
-      (s) =>
-        s.status === "rejected" &&
-        (s.detail ?? "").toLowerCase().includes("cap")
-    );
-
-  console.log(`  stake workflow completed:     ${stakeOk}`);
-  console.log(`  swap+stake workflow completed:${multiOk}`);
-  console.log(`  over-cap rejected:            ${overRejected}`);
-  console.log(`  over-cap mentions daily cap:  ${overCapReason}`);
-
-  if (!stakeOk || !multiOk || !overRejected || !overCapReason) {
-    console.error("\nFAIL: expected stake PASS + multi-app PASS + over-cap REJECT");
-    process.exitCode = 1;
+  const mode = envStr("CHAINPULSE_MODE", "live").toLowerCase();
+  if (mode === "paper") {
+    console.log("CHAINPULSE_MODE=paper — offline escape hatch (not live).");
+    console.log("Re-run without paper for live smoke.");
+    process.exitCode = 0;
     return;
   }
 
-  console.log("\nPASS: stake + multi-app DeFi + over-cap rejection demonstrated.");
+  const baw = new BawWalletAdapter({ mode: "live" });
+  const mcp = mcpStatusNote();
+  const mutate = envBool("LIVE_MUTATE", false);
+  const quoteAmt = envNum("LIVE_QUOTE_USDT", 1);
+  const depositAmt = envNum("LIVE_DEPOSIT_USDT", 1);
+
+  console.log("-- Rails --");
+  console.log(`  BAW (primary): ${baw.hubUrl}`);
+  console.log(`  chain: BSC ${BSC_CHAIN_ID}`);
+  console.log(`  USDT: ${USDT_BSC}`);
+  console.log(`  native BNB: ${NATIVE_BNB}`);
+  console.log(`  caps (real defaults): swap=$${BAW_DOCUMENTED_DAILY_CAPS_USD.swap}/d defi=$${BAW_DOCUMENTED_DAILY_CAPS_USD.defi}/d x402=$${BAW_DOCUMENTED_DAILY_CAPS_USD.x402}/d`);
+  console.log(`  MCP (optional): ${mcp.endpoint} (${mcp.label})`);
+  console.log(`  LIVE_MUTATE=${mutate ? "1" : "0"}`);
+  console.log("");
+
+  const refreshed = await baw.refreshLive();
+  const st = baw.status();
+  console.log("-- Wallet status --");
+  console.log(`  connection: ${st.connectionStatus}`);
+  console.log(`  address:    ${st.address || "(none)"}`);
+  console.log(`  label:      ${refreshed.label}`);
   console.log(
-    "Disclaimer: Not financial advice. PAPER/MOCK is not live on-chain. No external withdrawals. Documented BAW caps are public defaults, not guarantees."
+    `  remaining:  swap=$${st.remainingUsd.swap} defi=$${st.remainingUsd.defi} x402=$${st.remainingUsd.x402}`
   );
-  console.log("See AGENT_OS_NOTES.md, DEMO.md, BRIEF.md");
+
+  if (!refreshed.ok || st.connectionStatus !== "CONNECTED") {
+    console.error("\nFAIL: baw wallet must be CONNECTED for live demo.");
+    console.error("Auth: baw auth signin → Binance App QR → baw auth verify");
+    console.error("(Hub Connect alone is not enough)");
+    process.exitCode = 2;
+    return;
+  }
+
+  const bal = await baw.getBalances();
+  console.log("\n-- Balances --");
+  console.log(`  ${bal.label}`);
+  for (const b of bal.data) {
+    console.log(`  ${b.asset.padEnd(8)} free=${b.free}`);
+  }
+
+  console.log(`\n-- Quote ${quoteAmt} USDT → BNB --`);
+  const quote = await baw.quoteSwap({
+    fromAsset: "USDT",
+    toAsset: "BNB",
+    amountIn: quoteAmt,
+  });
+  console.log(`  ${quote.label}`);
+  if (!quote.ok) {
+    console.error("\nFAIL: live quote failed (not falling back to paper).");
+    process.exitCode = 1;
+    return;
+  }
+  console.log(`  amountOut≈ ${quote.data.amountOut} BNB`);
+
+  if (!mutate) {
+    console.log("\n-- Mutate skipped --");
+    console.log("  Set LIVE_MUTATE=1 to also market-order swap and/or Lista Earn deposit.");
+    console.log("\nPASS: CONNECTED + balances + live quote.");
+    console.log("Disclaimer: Not financial advice. Live ops need App confirmation. No withdrawals.");
+    return;
+  }
+
+  console.log("\n-- LIVE_MUTATE: swap 1 USDT → BNB --");
+  const swap = await baw.swap({
+    fromAsset: "USDT",
+    toAsset: "BNB",
+    amountIn: 1,
+    notionalUsd: 1,
+  });
+  console.log(`  ${swap.label}`);
+  console.log(`  ok=${swap.ok} status=${swap.data.status} id=${swap.data.swapId}`);
+
+  console.log("\n-- LIVE_MUTATE: Lista Earn USDT deposit --");
+  const disc = await baw.discoverListaUsdtInvestmentId();
+  console.log(`  ${disc.label}`);
+  if (disc.ok && disc.data.investmentId) {
+    const dep = await baw.defiDeposit({
+      investmentId: disc.data.investmentId,
+      amount: depositAmt,
+    });
+    console.log(`  ${dep.label}`);
+    console.log(`  ok=${dep.ok} status=${dep.data.status} id=${dep.data.stakeId}`);
+  } else {
+    console.log("  skip deposit — no investmentId");
+  }
+
+  const bal2 = await baw.getBalances();
+  console.log("\n-- Balances (after) --");
+  for (const b of bal2.data) {
+    console.log(`  ${b.asset.padEnd(8)} free=${b.free}`);
+  }
+
+  console.log("\nPASS: live mutate path attempted (check App for confirmations / settlement).");
+  console.log("Disclaimer: Not financial advice. No external withdrawals.");
 }
 
 main().catch((err) => {

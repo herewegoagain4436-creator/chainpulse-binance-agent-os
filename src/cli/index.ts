@@ -9,7 +9,7 @@ import {
 
 async function main(): Promise<void> {
   const cmd = (process.argv[2] ?? "snapshot").toLowerCase();
-  const orch = new WorkflowOrchestrator({ mode: "paper" });
+  const orch = new WorkflowOrchestrator();
 
   if (cmd === "snapshot") {
     console.log(JSON.stringify(orch.snapshot(), null, 2));

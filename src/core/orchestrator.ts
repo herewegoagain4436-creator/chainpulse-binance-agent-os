@@ -41,7 +41,7 @@ export class WorkflowOrchestrator {
 
   constructor(opts?: { mode?: BawMode; cfg?: RiskConfig; baw?: BawWalletAdapter }) {
     this.cfg = opts?.cfg ?? { ...DEFAULT_RISK };
-    this.baw = opts?.baw ?? new BawWalletAdapter({ mode: opts?.mode ?? "paper" });
+    this.baw = opts?.baw ?? new BawWalletAdapter({ mode: opts?.mode });
     this.riskState = createRiskState(this.cfg);
   }
 
